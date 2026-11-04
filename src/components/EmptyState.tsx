@@ -1,6 +1,7 @@
 import { Rocket, Calendar, Heart, Trophy, ChevronRight } from 'lucide-react';
 import type { ChallengeProgress } from '../challenges';
 import { countCompleted, nextChallenge } from '../challenges';
+import { useI18n } from '../i18n';
 
 interface Props {
   onQuickStart: () => void;
@@ -10,8 +11,17 @@ interface Props {
 }
 
 export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onChallenges }: Props) {
+  const { t } = useI18n();
   const completedCount = countCompleted(challenges);
   const next = nextChallenge(challenges);
+
+  const tags = [
+    t('empty.tagFree'),
+    t('empty.tagEquipment'),
+    t('empty.tagTime'),
+    t('empty.tagTeens'),
+  ];
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <div className="animate-fade-up rounded-3xl border border-ink-600 bg-gradient-to-br from-ink-800 to-ink-700/60 p-6 shadow-card sm:p-8">
@@ -20,19 +30,21 @@ export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onC
             🏃
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-lime-neon">Привіт від Вероніки</p>
-            <h2 className="text-xl font-extrabold text-white sm:text-2xl">Твій безкоштовний спортивний асистент</h2>
+            <p className="text-xs font-semibold uppercase tracking-wider text-lime-neon">
+              {t('empty.greeting')}
+            </p>
+            <h2 className="text-xl font-extrabold text-white sm:text-2xl">{t('empty.title')}</h2>
           </div>
         </div>
 
-        <p className="mb-6 text-base leading-relaxed text-slate-300">
-          Привіт! Я твій безкоштовний спортивний асистент. Допоможу підібрати тренування відповідно до твого рівня
-          та цілей. Разом зробимо спорт простим, цікавим і регулярним!
-        </p>
+        <p className="mb-6 text-base leading-relaxed text-slate-300">{t('empty.intro')}</p>
 
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          {['Безкоштовно', 'Без обладнання', '10–20 хв', 'Для підлітків'].map((tag) => (
-            <span key={tag} className="rounded-full border border-ink-600 bg-ink-900/60 px-3 py-1 text-xs font-semibold text-slate-400">
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-ink-600 bg-ink-900/60 px-3 py-1 text-xs font-semibold text-slate-400"
+            >
               {tag}
             </span>
           ))}
@@ -45,8 +57,8 @@ export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onC
           >
             <Rocket size={22} className="transition group-hover:translate-x-0.5" />
             <div className="text-left">
-              <p className="text-sm font-extrabold">Підібрати тренування</p>
-              <p className="text-xs font-semibold text-ink-900/70">За 10 хвилин до результату</p>
+              <p className="text-sm font-extrabold">{t('empty.quickStart')}</p>
+              <p className="text-xs font-semibold text-ink-900/70">{t('empty.quickStartSub')}</p>
             </div>
           </button>
           <button
@@ -55,8 +67,8 @@ export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onC
           >
             <Calendar size={22} className="text-lime-neon transition group-hover:scale-110" />
             <div className="text-left">
-              <p className="text-sm font-extrabold">План на тиждень</p>
-              <p className="text-xs font-semibold text-slate-400">7 днів спортивної звички</p>
+              <p className="text-sm font-extrabold">{t('empty.weekly')}</p>
+              <p className="text-xs font-semibold text-slate-400">{t('empty.weeklySub')}</p>
             </div>
           </button>
         </div>
@@ -70,17 +82,19 @@ export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onC
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-extrabold text-white">Челенджі тижня</p>
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                completedCount === challenges.length && challenges.length > 0
-                  ? 'bg-lime/20 text-lime-neon'
-                  : 'bg-ink-700 text-slate-300'
-              }`}>
+              <p className="text-sm font-extrabold text-white">{t('empty.challenges')}</p>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                  completedCount === challenges.length && challenges.length > 0
+                    ? 'bg-lime/20 text-lime-neon'
+                    : 'bg-ink-700 text-slate-300'
+                }`}
+              >
                 {completedCount}/{challenges.length}
               </span>
             </div>
             <p className="mt-0.5 truncate text-xs text-slate-400">
-              {next ? `Наступний: ${next.title}` : 'Усі челенджі виконано — ти зірка!'}
+              {next ? t('empty.next', { title: next.title }) : t('empty.allDone')}
             </p>
           </div>
           <ChevronRight
@@ -91,7 +105,7 @@ export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onC
 
         <div className="mt-6 flex items-center gap-2 text-xs text-slate-500">
           <Heart size={14} className="text-coral-neon" />
-          <span>Дружня підтримка замість жорсткого крику тренерів</span>
+          <span>{t('empty.footer')}</span>
         </div>
       </div>
     </div>

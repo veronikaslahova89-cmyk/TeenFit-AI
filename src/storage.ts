@@ -1,4 +1,4 @@
-import type { AppData, Achievement, Settings, WorkoutHistoryEntry } from './types';
+import type { AppData, Achievement, Language, Settings, WorkoutHistoryEntry } from './types';
 import { DEFAULT_MODEL, DEFAULT_SETTINGS, DEPRECATED_MODELS } from './types';
 
 const DATA_KEY = 'teenfit_data';
@@ -54,6 +54,8 @@ export function loadSettings(): Settings {
         typeof parsed.reminderTime === 'string' && /^\d{2}:\d{2}$/.test(parsed.reminderTime)
           ? parsed.reminderTime
           : DEFAULT_SETTINGS.reminderTime,
+      language: parsed.language === 'en' ? 'en' : 'uk',
+      soundEnabled: parsed.soundEnabled !== false,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };
@@ -68,15 +70,59 @@ export function saveSettings(settings: Settings): void {
   }
 }
 
-const ACHIEVEMENT_DEFS: { id: string; emoji: string; title: string; threshold: number }[] = [
-  { id: 'first', emoji: '🏆', title: 'Перший крок зроблено', threshold: 1 },
-  { id: 'streak1', emoji: '🔥', title: 'Стрік 1 день', threshold: 1 },
-  { id: 'streak3', emoji: '⚡', title: 'Стрік 3 дні', threshold: 3 },
-  { id: 'streak7', emoji: '💎', title: 'Стрік 7 днів', threshold: 7 },
-  { id: 'streak14', emoji: '👑', title: 'Стрік 14 днів', threshold: 14 },
-  { id: 'total5', emoji: '🚀', title: '5 тренувань', threshold: 5 },
-  { id: 'total10', emoji: '🌟', title: '10 тренувань', threshold: 10 },
+const ACHIEVEMENT_DEFS: {
+  id: string;
+  emoji: string;
+  title: Record<Language, string>;
+  threshold: number;
+}[] = [
+  {
+    id: 'first',
+    emoji: '🏆',
+    title: { uk: 'Перший крок зроблено', en: 'First step taken' },
+    threshold: 1,
+  },
+  {
+    id: 'streak1',
+    emoji: '🔥',
+    title: { uk: 'Стрік 1 день', en: '1-day streak' },
+    threshold: 1,
+  },
+  {
+    id: 'streak3',
+    emoji: '⚡',
+    title: { uk: 'Стрік 3 дні', en: '3-day streak' },
+    threshold: 3,
+  },
+  {
+    id: 'streak7',
+    emoji: '💎',
+    title: { uk: 'Стрік 7 днів', en: '7-day streak' },
+    threshold: 7,
+  },
+  {
+    id: 'streak14',
+    emoji: '👑',
+    title: { uk: 'Стрік 14 днів', en: '14-day streak' },
+    threshold: 14,
+  },
+  {
+    id: 'total5',
+    emoji: '🚀',
+    title: { uk: '5 тренувань', en: '5 workouts' },
+    threshold: 5,
+  },
+  {
+    id: 'total10',
+    emoji: '🌟',
+    title: { uk: '10 тренувань', en: '10 workouts' },
+    threshold: 10,
+  },
 ];
+
+export function getAchievementTitle(lang: Language, id: string, fallback: string): string {
+  return ACHIEVEMENT_DEFS.find((def) => def.id === id)?.title[lang] ?? fallback;
+}
 
 function todayStr(): string {
   const now = new Date();
@@ -94,6 +140,7 @@ function daysBetween(a: string, b: string): number {
 export function completeWorkout(
   data: AppData,
   entry?: Omit<WorkoutHistoryEntry, 'date'>,
+  language: Language = 'uk',
 ): { data: AppData; newBadges: Achievement[] } {
   const today = todayStr();
   let streak = data.streak;
@@ -116,7 +163,12 @@ export function completeWorkout(
       (def.id.startsWith('total') && totalCompleted >= def.threshold) ||
       (def.id === 'first' && totalCompleted >= 1);
     if (met && !existingIds.has(def.id)) {
-      newBadges.push({ id: def.id, emoji: def.emoji, title: def.title, unlockedAt: today });
+      newBadges.push({
+        id: def.id,
+        emoji: def.emoji,
+        title: def.title[language],
+        unlockedAt: today,
+      });
     }
   }
 

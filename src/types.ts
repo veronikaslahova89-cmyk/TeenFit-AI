@@ -4,6 +4,8 @@ export type GoalId = 'energy' | 'back' | 'core';
 
 export type Screen = 'empty' | 'inputs' | 'loading' | 'workout' | 'weekly';
 
+export type Language = 'uk' | 'en';
+
 export interface Exercise {
   name: string;
   duration: number; // seconds
@@ -45,6 +47,8 @@ export interface Settings {
   model: string;
   reminderEnabled: boolean;
   reminderTime: string; // HH:MM
+  language: Language;
+  soundEnabled: boolean;
 }
 
 export type Difficulty = 'easy' | 'ok' | 'hard';
@@ -75,29 +79,69 @@ export interface AppData {
   history: WorkoutHistoryEntry[];
 }
 
-export const DIFFICULTY_OPTIONS: { id: Difficulty; label: string; emoji: string; hint: string }[] = [
-  { id: 'easy', label: 'Легко', emoji: '😌', hint: 'Наступного разу трохи складніше' },
-  { id: 'ok', label: 'В самий раз', emoji: '💪', hint: 'Ідеальне навантаження' },
-  { id: 'hard', label: 'Важко', emoji: '🥵', hint: 'Наступного разу легше' },
+export const DIFFICULTY_OPTIONS: {
+  id: Difficulty;
+  label: Record<Language, string>;
+  emoji: string;
+  hint: Record<Language, string>;
+}[] = [
+  {
+    id: 'easy',
+    label: { uk: 'Легко', en: 'Easy' },
+    emoji: '😌',
+    hint: { uk: 'Наступного разу трохи складніше', en: 'A bit harder next time' },
+  },
+  {
+    id: 'ok',
+    label: { uk: 'В самий раз', en: 'Just right' },
+    emoji: '💪',
+    hint: { uk: 'Ідеальне навантаження', en: 'Perfect intensity' },
+  },
+  {
+    id: 'hard',
+    label: { uk: 'Важко', en: 'Hard' },
+    emoji: '🥵',
+    hint: { uk: 'Наступного разу легше', en: 'A bit easier next time' },
+  },
 ];
 
-export const SORENESS_OPTIONS: { id: SorenessId; label: string }[] = [
-  { id: 'back', label: 'Спина' },
-  { id: 'knees', label: 'Коліна' },
-  { id: 'shoulders', label: 'Плечі' },
-  { id: 'none', label: 'Нічого' },
+export const SORENESS_OPTIONS: { id: SorenessId; label: Record<Language, string> }[] = [
+  { id: 'back', label: { uk: 'Спина', en: 'Back' } },
+  { id: 'knees', label: { uk: 'Коліна', en: 'Knees' } },
+  { id: 'shoulders', label: { uk: 'Плечі', en: 'Shoulders' } },
+  { id: 'none', label: { uk: 'Нічого', en: 'Nothing' } },
 ];
 
-export const LEVELS: { id: Level; label: string; emoji: string }[] = [
-  { id: 'beginner', label: 'Тільки починаю', emoji: '🐣' },
-  { id: 'amateur', label: 'Любитель', emoji: '⚡' },
-  { id: 'regular', label: 'Займаюся регулярно', emoji: '🔥' },
+export const LEVELS: { id: Level; label: Record<Language, string>; emoji: string }[] = [
+  { id: 'beginner', label: { uk: 'Тільки починаю', en: 'Just starting' }, emoji: '🐣' },
+  { id: 'amateur', label: { uk: 'Любитель', en: 'Amateur' }, emoji: '⚡' },
+  { id: 'regular', label: { uk: 'Займаюся регулярно', en: 'I train regularly' }, emoji: '🔥' },
 ];
 
-export const GOALS: { id: GoalId; label: string; emoji: string; minutes: number }[] = [
-  { id: 'energy', label: 'Швидкий заряд енергії', emoji: '⚡', minutes: 10 },
-  { id: 'back', label: 'Зняти напругу в спині після уроків', emoji: '🧘', minutes: 15 },
-  { id: 'core', label: 'Потужний прес і руки', emoji: '💪', minutes: 15 },
+export const GOALS: {
+  id: GoalId;
+  label: Record<Language, string>;
+  emoji: string;
+  minutes: number;
+}[] = [
+  {
+    id: 'energy',
+    label: { uk: 'Швидкий заряд енергії', en: 'Quick energy boost' },
+    emoji: '⚡',
+    minutes: 10,
+  },
+  {
+    id: 'back',
+    label: { uk: 'Зняти напругу в спині після уроків', en: 'Release back tension after school' },
+    emoji: '🧘',
+    minutes: 15,
+  },
+  {
+    id: 'core',
+    label: { uk: 'Потужний прес і руки', en: 'Strong core and arms' },
+    emoji: '💪',
+    minutes: 15,
+  },
 ];
 
 export const TIME_OPTIONS = [10, 15, 20] as const;
@@ -106,7 +150,7 @@ export type TimeOption = (typeof TIME_OPTIONS)[number];
 export interface ModelOption {
   id: string;
   name: string;
-  hint: string;
+  hint: Record<Language, string>;
 }
 
 /** Free OpenRouter models verified to return the JSON shape used by the app. */
@@ -114,22 +158,22 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   {
     id: 'nvidia/nemotron-3.5-super-vl:free',
     name: 'NVIDIA Nemotron 3.5 Super VL',
-    hint: 'Універсальна · контекст 1M',
+    hint: { uk: 'Універсальна · контекст 1M', en: 'Universal · 1M context' },
   },
   {
     id: 'dots-studio/dots-3-note-preview:free',
     name: 'Dots3-Note Preview',
-    hint: 'Найстабільніший JSON · контекст 512K',
+    hint: { uk: 'Найстабільніший JSON · контекст 512K', en: 'Most stable JSON · 512K context' },
   },
   {
     id: 'nvidia/nemotron-3.5-lightning:free',
     name: 'NVIDIA Nemotron 3.5 Lightning',
-    hint: 'Компактна · довші reasoning-відповіді',
+    hint: { uk: 'Компактна · довші reasoning-відповіді', en: 'Compact · longer reasoning answers' },
   },
   {
     id: 'xingchen-agi/xing4.0-29b-a4b:free',
     name: 'Xing4.0 29B A4B',
-    hint: 'Контекст 262K · можливі upstream-ліміти',
+    hint: { uk: 'Контекст 262K · можливі upstream-ліміти', en: '262K context · possible upstream limits' },
   },
 ];
 
@@ -140,6 +184,8 @@ export const DEFAULT_SETTINGS: Settings = {
   model: DEFAULT_MODEL,
   reminderEnabled: false,
   reminderTime: '18:00',
+  language: 'uk',
+  soundEnabled: true,
 };
 
 /** Models that are no longer served by OpenRouter and must be migrated. */

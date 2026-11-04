@@ -1,4 +1,5 @@
-import type { AppData, Settings } from './types';
+import type { AppData, Language, Settings } from './types';
+import { translate } from './i18n';
 
 const LAST_REMINDER_KEY = 'teenfit_last_reminder';
 
@@ -43,10 +44,10 @@ export function reminderDue(settings: Settings, data: AppData, now = new Date())
   return localStorage.getItem(LAST_REMINDER_KEY) !== todayStr();
 }
 
-export async function showReminder(): Promise<void> {
-  const title = 'Час тренуватися! 💪';
+export async function showReminder(lang: Language): Promise<void> {
+  const title = translate(lang, 'reminder.title');
   const options: NotificationOptions = {
-    body: '10 хвилин — і ти зробиш крок до кращої форми. Твій AI-ментор уже чекає.',
+    body: translate(lang, 'reminder.body'),
     icon: '/pwa-192x192.png',
     badge: '/pwa-192x192.png',
     tag: 'teenfit-reminder',
@@ -69,7 +70,7 @@ export function startReminderLoop(settings: Settings, data: AppData): () => void
 
   const tick = () => {
     if (reminderDue(settings, data)) {
-      showReminder().catch(() => {
+      showReminder(settings.language).catch(() => {
         // Notifications can fail silently when the OS blocks them.
       });
     }

@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { CalendarDays, Check, Clock, Dumbbell, Share2, Trophy, X } from 'lucide-react';
 import type { ChallengeProgress, WeeklyStats } from '../challenges';
-import { countCompleted, plural } from '../challenges';
+import { countCompleted } from '../challenges';
+import { pluralize, useI18n } from '../i18n';
 
 interface Props {
   challenges: ChallengeProgress[];
@@ -19,11 +21,20 @@ export default function ChallengesModal({
   onClose,
   onShare,
 }: Props) {
+  const { lang, t } = useI18n();
   const completedCount = countCompleted(challenges);
   const allDone = completedCount === challenges.length;
-  const workoutsLabel = plural(stats.workouts, 'тренування', 'тренування', 'тренувань');
-  const minutesLabel = plural(stats.minutes, 'хвилина', 'хвилини', 'хвилин');
-  const activeDaysLabel = plural(stats.activeDays, 'активний день', 'активні дні', 'активних днів');
+  const workoutsLabel = pluralize(lang, stats.workouts, 'workouts');
+  const minutesLabel = pluralize(lang, stats.minutes, 'minutes');
+  const activeDaysLabel = pluralize(lang, stats.activeDays, 'activeDays');
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -32,7 +43,7 @@ export default function ChallengesModal({
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition hover:bg-ink-600 hover:text-white"
-          aria-label="Закрити"
+          aria-label={t('common.close')}
         >
           <X size={20} />
         </button>
@@ -42,7 +53,7 @@ export default function ChallengesModal({
             <Trophy size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-white">Тижневі челенджі</h2>
+            <h2 className="text-xl font-extrabold text-white">{t('challenges.title')}</h2>
             <p className="text-sm text-slate-400">{weekLabel}</p>
           </div>
         </div>
@@ -66,11 +77,15 @@ export default function ChallengesModal({
         </div>
 
         <div className="mb-3 flex items-center justify-between gap-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Твій прогрес</p>
-          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-            allDone ? 'bg-lime/20 text-lime-neon' : 'bg-ink-700 text-slate-300'
-          }`}>
-            {completedCount} з {challenges.length}
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            {t('challenges.progress')}
+          </p>
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+              allDone ? 'bg-lime/20 text-lime-neon' : 'bg-ink-700 text-slate-300'
+            }`}
+          >
+            {t('challenges.count', { done: completedCount, total: challenges.length })}
           </span>
         </div>
 
@@ -117,12 +132,18 @@ export default function ChallengesModal({
                         style={{ width: `${percent}%` }}
                       />
                     </div>
-                    <p className={`mt-1.5 text-[11px] font-semibold ${
-                      challenge.completed ? 'text-lime-neon' : 'text-slate-500'
-                    }`}>
+                    <p
+                      className={`mt-1.5 text-[11px] font-semibold ${
+                        challenge.completed ? 'text-lime-neon' : 'text-slate-500'
+                      }`}
+                    >
                       {challenge.completed
-                        ? 'Виконано — так тримати!'
-                        : `${challenge.current} з ${challenge.target} ${challenge.unit}`}
+                        ? t('challenges.completed')
+                        : t('challenges.current', {
+                            current: challenge.current,
+                            target: challenge.target,
+                            unit: challenge.unit,
+                          })}
                     </p>
                   </div>
                 </div>
@@ -138,15 +159,15 @@ export default function ChallengesModal({
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-lime py-3 text-sm font-bold text-ink-900 shadow-neon transition hover:brightness-110 active:scale-[0.98]"
             >
               <Share2 size={17} />
-              Поділитися результатом
+              {t('common.share')}
             </button>
           ) : (
             <p className="rounded-xl border border-ink-600 bg-ink-900/40 px-4 py-3 text-center text-xs leading-relaxed text-slate-400">
-              Заверши перше тренування — і зможеш поділитися своїм результатом з друзями.
+              {t('challenges.noShare')}
             </p>
           )}
           <p className="mt-3 text-center text-[11px] leading-relaxed text-slate-500">
-            Челенджі оновлюються щопонеділка. Прогрес зберігається на цьому пристрої.
+            {t('challenges.footer')}
           </p>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { Lightbulb, Timer as TimerIcon } from 'lucide-react';
 import type { Exercise } from '../types';
+import { useI18n } from '../i18n';
 
 interface Props {
   exercise: Exercise;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 export default function ExerciseCard({ exercise, index, active }: Props) {
+  const { t } = useI18n();
+
   return (
     <div
       className={`rounded-2xl border p-4 transition-all duration-300 ${
@@ -22,14 +25,16 @@ export default function ExerciseCard({ exercise, index, active }: Props) {
         </span>
         <span className="flex items-center gap-1 rounded-full bg-ink-900/60 px-2.5 py-1 text-xs font-semibold text-slate-300">
           <TimerIcon size={12} />
-          {exercise.reps ?? `${exercise.duration}с`}
+          {exercise.reps ?? `${exercise.duration}${t('common.secShort')}`}
         </span>
       </div>
-      <h4 className={`text-base font-bold ${active ? 'text-white' : 'text-slate-400'}`}>{exercise.name}</h4>
+      <h4 className={`text-base font-bold ${active ? 'text-white' : 'text-slate-400'}`}>
+        {exercise.name}
+      </h4>
       <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-ink-900/50 p-2.5">
         <Lightbulb size={15} className="mt-0.5 shrink-0 text-amber-400" />
         <p className="text-xs leading-relaxed text-slate-400">
-          <span className="font-semibold text-amber-300">Лайфхак техніки: </span>
+          <span className="font-semibold text-amber-300">{t('workout.techniqueTip')}</span>
           {exercise.tip}
         </p>
       </div>

@@ -1,4 +1,5 @@
-import type { WorkoutHistoryEntry } from './types';
+import type { Language, WorkoutHistoryEntry } from './types';
+import { MONTHS } from './i18n';
 
 export type ChallengeId = 'workouts3' | 'minutes30' | 'days4' | 'streak3';
 
@@ -23,62 +24,65 @@ export interface WeeklyStats {
   streak: number;
 }
 
-export const CHALLENGES: ChallengeDef[] = [
-  {
-    id: 'workouts3',
-    emoji: '🏋️',
-    title: '3 тренування за тиждень',
-    description: 'Тримай ритм: три сесії до неділі.',
-    target: 3,
-    unit: 'тренувань',
+const CHALLENGE_CONTENT: Record<
+  ChallengeId,
+  Record<Language, { title: string; description: string; unit: string }>
+> = {
+  workouts3: {
+    uk: {
+      title: '3 тренування за тиждень',
+      description: 'Тримай ритм: три сесії до неділі.',
+      unit: 'тренувань',
+    },
+    en: {
+      title: '3 workouts this week',
+      description: 'Keep the rhythm: three sessions by Sunday.',
+      unit: 'workouts',
+    },
   },
-  {
-    id: 'minutes30',
-    emoji: '⏱️',
-    title: '30 хвилин руху',
-    description: 'Сумарно 30 хвилин активності за тиждень.',
-    target: 30,
-    unit: 'хв',
+  minutes30: {
+    uk: {
+      title: '30 хвилин руху',
+      description: 'Сумарно 30 хвилин активності за тиждень.',
+      unit: 'хв',
+    },
+    en: {
+      title: '30 minutes of movement',
+      description: 'A total of 30 active minutes this week.',
+      unit: 'min',
+    },
   },
-  {
-    id: 'days4',
-    emoji: '📅',
-    title: '4 активні дні',
-    description: 'Тренуйся в різні дні — так звичка міцніша.',
-    target: 4,
-    unit: 'днів',
+  days4: {
+    uk: {
+      title: '4 активні дні',
+      description: 'Тренуйся в різні дні — так звичка міцніша.',
+      unit: 'днів',
+    },
+    en: {
+      title: '4 active days',
+      description: 'Work out on different days — habits stick better that way.',
+      unit: 'days',
+    },
   },
-  {
-    id: 'streak3',
-    emoji: '🔥',
-    title: 'Серія 3 дні',
-    description: 'Три дні поспіль без пропусків.',
-    target: 3,
-    unit: 'днів',
+  streak3: {
+    uk: {
+      title: 'Серія 3 дні',
+      description: 'Три дні поспіль без пропусків.',
+      unit: 'днів',
+    },
+    en: {
+      title: '3-day streak',
+      description: 'Three days in a row without skipping.',
+      unit: 'days',
+    },
   },
-];
+};
 
-export function plural(count: number, one: string, few: string, many: string): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
-}
-
-const MONTHS_GENITIVE = [
-  'січня',
-  'лютого',
-  'березня',
-  'квітня',
-  'травня',
-  'червня',
-  'липня',
-  'серпня',
-  'вересня',
-  'жовтня',
-  'листопада',
-  'грудня',
+const CHALLENGE_META: { id: ChallengeId; emoji: string; target: number }[] = [
+  { id: 'workouts3', emoji: '🏋️', target: 3 },
+  { id: 'minutes30', emoji: '⏱️', target: 30 },
+  { id: 'days4', emoji: '📅', target: 4 },
+  { id: 'streak3', emoji: '🔥', target: 3 },
 ];
 
 function pad(value: number): string {
@@ -103,16 +107,17 @@ function endOfWeek(now: Date): Date {
 }
 
 /** Human-readable range of the current Monday–Sunday week, e.g. «3–9 листопада». */
-export function getWeekLabel(now = new Date()): string {
+export function getWeekLabel(lang: Language, now = new Date()): string {
   const start = startOfWeek(now);
   const end = endOfWeek(now);
+  const months = MONTHS[lang];
   const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
   const yearSuffix = start.getFullYear() !== end.getFullYear() ? ` ${end.getFullYear()}` : '';
 
   if (sameMonth) {
-    return `${start.getDate()}–${end.getDate()} ${MONTHS_GENITIVE[start.getMonth()]}`;
+    return `${start.getDate()}–${end.getDate()} ${months[start.getMonth()]}`;
   }
-  return `${start.getDate()} ${MONTHS_GENITIVE[start.getMonth()]} – ${end.getDate()} ${MONTHS_GENITIVE[end.getMonth()]}${yearSuffix}`;
+  return `${start.getDate()} ${months[start.getMonth()]} – ${end.getDate()} ${months[end.getMonth()]}${yearSuffix}`;
 }
 
 export function getWeeklyStats(
@@ -135,6 +140,7 @@ export function getWeeklyStats(
 export function getChallenges(
   history: WorkoutHistoryEntry[],
   streak: number,
+  lang: Language,
   now = new Date(),
 ): ChallengeProgress[] {
   const stats = getWeeklyStats(history, streak, now);
@@ -145,12 +151,18 @@ export function getChallenges(
     streak3: stats.streak,
   };
 
-  return CHALLENGES.map((def) => {
-    const raw = Math.max(0, currentById[def.id]);
+  return CHALLENGE_META.map((meta) => {
+    const content = CHALLENGE_CONTENT[meta.id][lang];
+    const raw = Math.max(0, currentById[meta.id]);
     return {
-      ...def,
-      current: Math.min(raw, def.target),
-      completed: raw >= def.target,
+      id: meta.id,
+      emoji: meta.emoji,
+      title: content.title,
+      description: content.description,
+      target: meta.target,
+      unit: content.unit,
+      current: Math.min(raw, meta.target),
+      completed: raw >= meta.target,
     };
   });
 }

@@ -1,6 +1,7 @@
 import { Rocket, Calendar, AlertCircle, Clock } from 'lucide-react';
 import type { Level, GoalId, TimeOption } from '../types';
 import { LEVELS, GOALS, TIME_OPTIONS } from '../types';
+import { useI18n } from '../i18n';
 
 interface Props {
   level: Level | null;
@@ -16,14 +17,27 @@ interface Props {
 }
 
 export default function InputPanel({
-  level, goal, minutes, onLevel, onGoal, onMinutes, onGenerate, onWeekly, error, compact,
+  level,
+  goal,
+  minutes,
+  onLevel,
+  onGoal,
+  onMinutes,
+  onGenerate,
+  onWeekly,
+  error,
+  compact,
 }: Props) {
+  const { lang, t } = useI18n();
+
   return (
     <div className={`mx-auto max-w-2xl px-4 sm:px-6 ${compact ? 'py-4' : 'py-6'}`}>
-      <div className={`rounded-3xl border border-ink-600 bg-ink-800/80 p-5 shadow-card sm:p-6 ${compact ? '' : 'animate-fade-up'}`}>
+      <div
+        className={`rounded-3xl border border-ink-600 bg-ink-800/80 p-5 shadow-card sm:p-6 ${compact ? '' : 'animate-fade-up'}`}
+      >
         {/* Level */}
         <div className="mb-5">
-          <p className="mb-2.5 text-sm font-bold text-white">Рівень підготовки</p>
+          <p className="mb-2.5 text-sm font-bold text-white">{t('input.level')}</p>
           <div className="grid grid-cols-3 gap-2">
             {LEVELS.map((l) => (
               <button
@@ -36,7 +50,7 @@ export default function InputPanel({
                 }`}
               >
                 <span className="text-2xl">{l.emoji}</span>
-                <span className="text-xs font-semibold leading-tight">{l.label}</span>
+                <span className="text-xs font-semibold leading-tight">{l.label[lang]}</span>
               </button>
             ))}
           </div>
@@ -44,7 +58,7 @@ export default function InputPanel({
 
         {/* Goal */}
         <div className="mb-5">
-          <p className="mb-2.5 text-sm font-bold text-white">Що ти хочеш сьогодні?</p>
+          <p className="mb-2.5 text-sm font-bold text-white">{t('input.goal')}</p>
           <div className="grid gap-2">
             {GOALS.map((g) => (
               <button
@@ -58,8 +72,10 @@ export default function InputPanel({
               >
                 <span className="text-xl">{g.emoji}</span>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold">{g.label}</p>
-                  <p className="text-xs text-slate-500">{g.minutes} хв</p>
+                  <p className="text-sm font-semibold">{g.label[lang]}</p>
+                  <p className="text-xs text-slate-500">
+                    {g.minutes} {t('common.min')}
+                  </p>
                 </div>
               </button>
             ))}
@@ -70,20 +86,20 @@ export default function InputPanel({
         <div className="mb-5">
           <p className="mb-2.5 flex items-center gap-1.5 text-sm font-bold text-white">
             <Clock size={16} className="text-lime-neon" />
-            Скільки маєш вільного часу
+            {t('input.time')}
           </p>
           <div className="grid grid-cols-3 gap-2">
-            {TIME_OPTIONS.map((t) => (
+            {TIME_OPTIONS.map((time) => (
               <button
-                key={t}
-                onClick={() => onMinutes(t)}
+                key={time}
+                onClick={() => onMinutes(time)}
                 className={`rounded-xl border py-2.5 text-sm font-bold transition active:scale-[0.97] ${
-                  minutes === t
+                  minutes === time
                     ? 'border-lime bg-lime/15 text-lime-neon'
                     : 'border-ink-600 bg-ink-900/40 text-slate-400 hover:border-ink-500'
                 }`}
               >
-                {t} хв
+                {time} {t('common.min')}
               </button>
             ))}
           </div>
@@ -104,14 +120,14 @@ export default function InputPanel({
             className="group flex items-center justify-center gap-2.5 rounded-2xl bg-lime px-5 py-4 text-base font-extrabold text-ink-900 shadow-neon transition hover:brightness-110 active:scale-[0.98]"
           >
             <Rocket size={20} className="transition group-hover:translate-x-0.5" />
-            Підібрати тренування
+            {t('input.generate')}
           </button>
           <button
             onClick={onWeekly}
             className="flex items-center justify-center gap-2.5 rounded-2xl border-2 border-ink-500 bg-ink-900/40 px-5 py-4 text-base font-bold text-white transition hover:border-lime/40 active:scale-[0.98]"
           >
             <Calendar size={20} className="text-lime-neon" />
-            План на тиждень
+            {t('input.weekly')}
           </button>
         </div>
       </div>

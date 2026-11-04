@@ -1,5 +1,7 @@
 import { Share2, X } from 'lucide-react';
 import type { Achievement } from '../types';
+import { useI18n } from '../i18n';
+import { getAchievementTitle } from '../storage';
 
 interface Props {
   badges: Achievement[];
@@ -10,6 +12,8 @@ interface Props {
 const CONFETTI_COLORS = ['#84cc16', '#f43f5e', '#a3e635', '#fb7185', '#fbbf24', '#38bdf8'];
 
 export default function AchievementModal({ badges, onClose, onShare }: Props) {
+  const { lang, t } = useI18n();
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
@@ -29,21 +33,26 @@ export default function AchievementModal({ badges, onClose, onShare }: Props) {
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition hover:bg-ink-600 hover:text-white"
+          aria-label={t('common.close')}
         >
           <X size={20} />
         </button>
-        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-lime-neon">Ти зробив це!</p>
-        <h2 className="mb-4 text-2xl font-extrabold text-white">Нові досягнення 🎉</h2>
+        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-lime-neon">
+          {t('achievements.eyebrow')}
+        </p>
+        <h2 className="mb-4 text-2xl font-extrabold text-white">{t('achievements.title')}</h2>
         <div className="space-y-3">
-          {badges.map((b) => (
+          {badges.map((badge) => (
             <div
-              key={b.id}
+              key={badge.id}
               className="flex items-center gap-3 rounded-2xl border border-lime/30 bg-lime/10 p-3.5 animate-pop-in"
             >
-              <span className="text-3xl">{b.emoji}</span>
+              <span className="text-3xl">{badge.emoji}</span>
               <div className="text-left">
-                <p className="text-sm font-bold text-white">{b.title}</p>
-                <p className="text-xs text-slate-400">Розблоковано сьогодні</p>
+                <p className="text-sm font-bold text-white">
+                  {getAchievementTitle(lang, badge.id, badge.title)}
+                </p>
+                <p className="text-xs text-slate-400">{t('achievements.unlocked')}</p>
               </div>
             </div>
           ))}
@@ -52,7 +61,7 @@ export default function AchievementModal({ badges, onClose, onShare }: Props) {
           onClick={onClose}
           className="mt-5 w-full rounded-xl bg-lime py-3 text-sm font-bold text-ink-900 shadow-neon transition hover:brightness-110 active:scale-[0.98]"
         >
-          Продовжити круту звичку 💪
+          {t('achievements.continue')}
         </button>
         {onShare && (
           <button
@@ -60,7 +69,7 @@ export default function AchievementModal({ badges, onClose, onShare }: Props) {
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-ink-500 py-3 text-sm font-bold text-slate-300 transition hover:border-lime/40 hover:text-lime-neon active:scale-[0.98]"
           >
             <Share2 size={16} />
-            Поділитися результатом
+            {t('common.share')}
           </button>
         )}
       </div>
