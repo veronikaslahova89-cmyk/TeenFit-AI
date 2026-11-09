@@ -2,7 +2,7 @@ export type Level = 'beginner' | 'amateur' | 'regular';
 
 export type GoalId = 'energy' | 'back' | 'core';
 
-export type Screen = 'empty' | 'inputs' | 'loading' | 'workout' | 'weekly';
+export type Screen = 'empty' | 'inputs' | 'loading' | 'workout' | 'weekly' | 'favorites';
 
 export type Language = 'uk' | 'en';
 

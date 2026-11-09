@@ -1,25 +1,42 @@
 import { useState, useCallback } from 'react';
 import { ArrowLeft, Sparkles, Flame, Check, Heart, Dumbbell } from 'lucide-react';
-import type { Workout } from '../types';
+import type { Exercise, Workout } from '../types';
 import { useI18n } from '../i18n';
 import ExerciseTimer from './ExerciseTimer';
 import ExerciseCard from './ExerciseCard';
+import { isSameExercise } from '../storage';
 
 interface Props {
   workout: Workout;
   onBack: () => void;
   onComplete: () => void;
   soundEnabled: boolean;
+  favoriteExercises: Exercise[];
+  onToggleFavorite: (exercise: Exercise) => void;
 }
 
-export default function WorkoutView({ workout, onBack, onComplete, soundEnabled }: Props) {
+export default function WorkoutView({
+  workout,
+  onBack,
+  onComplete,
+  soundEnabled,
+  favoriteExercises,
+  onToggleFavorite,
+}: Props) {
   const { t } = useI18n();
   const [currentIdx, setCurrentIdx] = useState(0);
   const [completedSet, setCompletedSet] = useState<Set<number>>(new Set());
+  const [showFavorites, setShowFavorites] = useState(false);
 
   const current = workout.exercises[currentIdx];
   const isLast = currentIdx === workout.exercises.length - 1;
   const allDone = completedSet.size === workout.exercises.length;
+  const visibleExercises = workout.exercises
+    .map((exercise, index) => ({ exercise, index }))
+    .filter(
+      ({ exercise }) =>
+        !showFavorites || favoriteExercises.some((favorite) => isSameExercise(favorite, exercise)),
+    );
 
   const handleComplete = useCallback(() => {
     setCompletedSet((s) => new Set(s).add(currentIdx));
@@ -68,10 +85,49 @@ export default function WorkoutView({ workout, onBack, onComplete, soundEnabled 
       )}
 
       {/* Exercise list */}
-      <div className="mb-5 space-y-2.5">
-        {workout.exercises.map((ex, i) => (
-          <ExerciseCard key={i} exercise={ex} index={i} active={i === currentIdx} />
-        ))}
+      <div className="mb-5">
+        <div className="mb-3 grid grid-cols-2 gap-2" role="group" aria-label={t('favorites.filterLabel')}>
+          <button
+            type="button"
+            onClick={() => setShowFavorites(false)}
+            aria-pressed={!showFavorites}
+            className={`min-h-11 rounded-xl px-3 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime ${
+              !showFavorites ? 'bg-lime text-ink-900' : 'bg-ink-700 text-slate-300 hover:bg-ink-600'
+            }`}
+          >
+            {t('favorites.all')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowFavorites(true)}
+            aria-pressed={showFavorites}
+            className={`min-h-11 rounded-xl px-3 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime ${
+              showFavorites ? 'bg-lime text-ink-900' : 'bg-ink-700 text-slate-300 hover:bg-ink-600'
+            }`}
+          >
+            {t('favorites.saved')}
+          </button>
+        </div>
+        {visibleExercises.length ? (
+          <div className="space-y-2.5">
+            {visibleExercises.map(({ exercise, index }) => (
+              <ExerciseCard
+                key={`${exercise.name}-${index}`}
+                exercise={exercise}
+                index={index}
+                active={index === currentIdx}
+                isFavorite={favoriteExercises.some((favorite) =>
+                  isSameExercise(favorite, exercise),
+                )}
+                onToggleFavorite={onToggleFavorite}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-6 text-center text-sm font-semibold text-slate-300">
+            {t('favorites.empty')}
+          </p>
+        )}
       </div>
 
       {/* Timer */}

@@ -8,9 +8,18 @@ interface Props {
   onWeeklyPlan: () => void;
   challenges: ChallengeProgress[];
   onChallenges: () => void;
+  favoritesCount: number;
+  onFavorites: () => void;
 }
 
-export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onChallenges }: Props) {
+export default function EmptyState({
+  onQuickStart,
+  onWeeklyPlan,
+  challenges,
+  onChallenges,
+  favoritesCount,
+  onFavorites,
+}: Props) {
   const { t } = useI18n();
   const completedCount = countCompleted(challenges);
   const next = nextChallenge(challenges);
@@ -72,6 +81,19 @@ export default function EmptyState({ onQuickStart, onWeeklyPlan, challenges, onC
             </div>
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={onFavorites}
+          className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-2xl border border-ink-600 bg-ink-900/40 px-4 py-3 text-left transition hover:border-coral/40 hover:bg-ink-800 active:scale-[0.99]"
+        >
+          <Heart size={20} className="shrink-0 text-rose-400" />
+          <span className="flex-1 text-sm font-extrabold text-white">{t('favorites.saved')}</span>
+          <span className="rounded-full bg-ink-700 px-2.5 py-1 text-xs font-bold text-slate-300">
+            {favoritesCount}
+          </span>
+          <ChevronRight size={18} className="shrink-0 text-slate-500" />
+        </button>
 
         <button
           onClick={onChallenges}

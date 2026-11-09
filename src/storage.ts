@@ -1,8 +1,51 @@
-import type { AppData, Achievement, Language, Settings, WorkoutHistoryEntry } from './types';
+import type {
+  AppData,
+  Achievement,
+  Exercise,
+  Language,
+  Settings,
+  WorkoutHistoryEntry,
+} from './types';
 import { DEFAULT_MODEL, DEFAULT_SETTINGS, DEPRECATED_MODELS } from './types';
 
 const DATA_KEY = 'teenfit_data';
 const SETTINGS_KEY = 'teenfit_settings';
+const FAVORITES_KEY = 'visualsport_favorite_exercises';
+
+export function isSameExercise(a: Exercise, b: Exercise): boolean {
+  return a.name === b.name && a.duration === b.duration && a.reps === b.reps && a.tip === b.tip;
+}
+
+function isExercise(value: unknown): value is Exercise {
+  if (!value || typeof value !== 'object') return false;
+  const exercise = value as Partial<Exercise>;
+  return (
+    typeof exercise.name === 'string' &&
+    typeof exercise.duration === 'number' &&
+    Number.isFinite(exercise.duration) &&
+    typeof exercise.tip === 'string' &&
+    (exercise.reps === undefined || typeof exercise.reps === 'string')
+  );
+}
+
+export function loadFavoriteExercises(): Exercise[] {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter(isExercise) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveFavoriteExercises(exercises: Exercise[]): void {
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(exercises));
+  } catch {
+    // ignore
+  }
+}
 
 export const DEFAULT_DATA: AppData = {
   streak: 0,

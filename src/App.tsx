@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react';
 import type {
   Achievement,
   AppData,
+  Exercise,
   GoalId,
   Language,
   Level,
@@ -15,7 +16,15 @@ import type {
 } from './types';
 import { GOALS } from './types';
 import { generateWorkout, generateWeeklyPlan } from './openrouter';
-import { loadData, loadSettings, saveSettings, completeWorkout } from './storage';
+import {
+  completeWorkout,
+  isSameExercise,
+  loadData,
+  loadFavoriteExercises,
+  loadSettings,
+  saveFavoriteExercises,
+  saveSettings,
+} from './storage';
 import Header from './components/Header';
 import SettingsModal from './components/SettingsModal';
 import EmptyState from './components/EmptyState';
@@ -25,6 +34,7 @@ import WeeklyPlanView from './components/WeeklyPlanView';
 import AchievementModal from './components/AchievementModal';
 import FeedbackModal from './components/FeedbackModal';
 import ChallengesModal from './components/ChallengesModal';
+import FavoritesView from './components/FavoritesView';
 import Toast from './components/Toast';
 import { getChallenges, getWeekLabel, getWeeklyStats } from './challenges';
 import { buildShareText, shareText } from './share';
@@ -35,6 +45,9 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('empty');
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
   const [data, setData] = useState<AppData>(() => loadData());
+  const [favoriteExercises, setFavoriteExercises] = useState<Exercise[]>(() =>
+    loadFavoriteExercises(),
+  );
   const [showSettings, setShowSettings] = useState(false);
   const [level, setLevel] = useState<Level | null>(null);
   const [goal, setGoal] = useState<GoalId | null>(null);
@@ -67,6 +80,10 @@ export default function App() {
   useEffect(() => {
     saveSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    saveFavoriteExercises(favoriteExercises);
+  }, [favoriteExercises]);
 
   useEffect(() => {
     document.documentElement.lang = settings.language;
@@ -137,6 +154,14 @@ export default function App() {
   );
 
   const clearToast = useCallback(() => setToast(null), []);
+
+  const handleToggleFavorite = useCallback((exercise: Exercise) => {
+    setFavoriteExercises((current) =>
+      current.some((favorite) => isSameExercise(favorite, exercise))
+        ? current.filter((favorite) => !isSameExercise(favorite, exercise))
+        : [...current, exercise],
+    );
+  }, []);
 
   const handleShare = useCallback(async () => {
     const outcome = await shareText(
@@ -253,6 +278,16 @@ export default function App() {
               onWeeklyPlan={startWeeklyFromEmpty}
               challenges={challenges}
               onChallenges={() => setShowChallenges(true)}
+              favoritesCount={favoriteExercises.length}
+              onFavorites={() => setScreen('favorites')}
+            />
+          )}
+
+          {screen === 'favorites' && (
+            <FavoritesView
+              exercises={favoriteExercises}
+              onBack={() => setScreen('empty')}
+              onToggleFavorite={handleToggleFavorite}
             />
           )}
 
@@ -285,6 +320,8 @@ export default function App() {
               onBack={handleBack}
               onComplete={handleComplete}
               soundEnabled={settings.soundEnabled}
+              favoriteExercises={favoriteExercises}
+              onToggleFavorite={handleToggleFavorite}
             />
           )}
 
